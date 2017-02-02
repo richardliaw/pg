@@ -1,7 +1,8 @@
 import numpy as np
 from misc import sigmoid, discounted_cumsum
 
-class RLNN():
+class KarpathyNN():
+    """Personal re-implementation guided by Andrej Karpathy"""
     def __init__(self, input_size, hid_size, output_size=1):
         W1 = np.random.randn(hid_size, input_size)
         W2 = np.random.randn(hid_size)
@@ -16,13 +17,16 @@ class RLNN():
 
 
     def feedforward(self, I):
+        """Returns action taken"""
         self.eph['h1'].append(I)
         m1 = np.dot(self.weights['W1'], I)
         m1[m1 < 0] = 0 # nonlinearity
         self.eph['h2'].append(m1)
         logp = np.dot(m1, self.weights['W2']) # not exactly logp but ok
-        out = sigmoid(logp)
-        return out
+        aprob = sigmoid(logp)
+        action = int(np.random.uniform() < aprob) 
+        self.add_dlogp(action, aprob)
+        return action
 
     def backprop(self, rwd, h1, h2, dlogp): #h1 is input
         dEdh = dlogp * self.weights['W2']
@@ -44,24 +48,9 @@ class RLNN():
     
     def model_update(self):
         for model in self.weights:
-            self.weights[model] += self.alpha * self.dweights[model]
+            print "%s: " % model, self.weights[model][:4]
+            self.weights[model] += self.alpha * self.dweights[model] # .. didn't average but it's ok
             self.dweights[model] = np.zeros_like(self.dweights[model])
 
-class Policy():
-    def __init__(self, env):
-        self._model = RLNN(len(env.observation_space.high), 64)
-        pass
-
-    def get_action(self, state):
-        aprob = self._model.feedforward(state)
-        action = int(np.random.uniform() < aprob)
-        self._model.add_dlogp(action, aprob)
-        return action
-
-    def process_gradient(self, trajrwd):
-        self._model.policy_grad(trajrwd)
-
-    def update(self):
-        self._model.model_update()
 
 

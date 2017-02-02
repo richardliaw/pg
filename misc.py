@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 def sigmoid(x):
 	return 1.0 / (1.0 + np.exp(-x))
@@ -9,3 +10,69 @@ def discounted_cumsum(arr, gamma):
         discounted.append(arr[i]+ discounted[-1] * gamma)
     return discounted[::-1]
 
+def normalize(arr):
+    return (arr - np.mean(arr)) / (np.std(arr) + 1e-10)
+
+def weight_variable(shape):
+	initial = tf.truncated_normal(shape, stddev=0.1)
+	return tf.Variable(initial)
+
+def bias_variable(shape):
+	initial = tf.constant(0.1, shape=shape)
+	return tf.Variable(initial)
+
+def evaluate_policy(env, agent, itr=20):
+    rewards = []
+    for i in range(itr):
+        _, _, rews = policy_rollout(env, agent)
+        rewards.append(sum(rews))
+    return np.mean(rewards)
+
+def policy_rollout(env, agent, horizon=None):
+    """Run one episode."""
+    if horizon is None:
+        if hasattr(env, "horizon"):
+            horizon = env.horizon
+        else:
+            horizon = np.inf
+    observation, reward, done = env.reset(), 0, False
+    obs, acts, rews = [], [], []
+    eps_length = 0
+    while not done and (eps_length < horizon):
+        obs.append(observation)
+        action = agent.act(observation)
+
+        observation, reward, done, _ = env.step(action)
+        acts.append(action)
+        rews.append(reward)
+        eps_length += 1
+    return obs, acts, rews
+
+
+def policy_continue(env, agent, steps, horizon=None):
+    """Run few steps - assumes env object is stateful"""
+    if horizon is None:
+        if hasattr(env, "horizon"):
+            horizon = env.horizon
+        else:
+            horizon = np.inf
+
+    reward, done = 0, False
+    obs, acts, rews = [], [], []
+    if hasattr(env, "state"):
+        observation = env.state
+    else:
+        observation = env.reset()
+
+    for i in range(steps):
+        obs.append(observation)
+        action = agent.act(observation)
+
+        observation, reward, done, _ = env.step(action)
+
+        acts.append(action)
+        rews.append(reward)        
+        if done:
+            observation = env.reset()
+            break
+    return obs, acts, rews, done
