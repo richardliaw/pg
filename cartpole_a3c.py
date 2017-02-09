@@ -8,7 +8,7 @@ import ray
 from actorcritic import ActorCritic
 from critic import Critic
 
-NUM_WORKERS = 1
+NUM_WORKERS = 2
 GAMMA = 0.95
 ray.init(num_workers=NUM_WORKERS)
 

@@ -40,7 +40,7 @@ def evaluate_policy(env, agent, itr=20):
         rewards.append(sum(rews))
     return np.mean(rewards)
 
-def policy_rollout(env, agent, horizon=None):
+def policy_rollout(env, agent, horizon=None, show=False):
     """Run one episode."""
     if horizon is None:
         if hasattr(env, "horizon"):
@@ -55,13 +55,14 @@ def policy_rollout(env, agent, horizon=None):
         action = agent.act(observation)
 
         observation, reward, done, _ = env.step(action)
+        if show: env.render()
         acts.append(action)
         rews.append(reward)
         eps_length += 1
     return obs, acts, rews
 
 
-def policy_continue(env, agent, steps, horizon=None):
+def policy_continue(env, agent, steps, horizon=None,  show=False):
     """Run few steps - assumes env object is stateful"""
     if horizon is None:
         if hasattr(env, "horizon"):
@@ -74,15 +75,17 @@ def policy_continue(env, agent, steps, horizon=None):
     if hasattr(env, "state"):
         observation = env.state
     else:
+        print "Resetting..."
         observation = env.reset()
+
 
     for i in range(steps):
         obs.append(observation)
         action = agent.act(observation)
-        if action == 2:
-            import ipdb; ipdb.set_trace()  # breakpoint 53d1bdca //
+        # if action == 2:
 
         observation, reward, done, _ = env.step(action)
+        if show: env.render()
 
         acts.append(action)
         rews.append(reward)        
