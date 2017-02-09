@@ -1,6 +1,18 @@
 import numpy as np
 import tensorflow as tf
 
+class RunningAvg():
+    def __init__(self):
+        self._sum = 0.0
+        self._count = 1e-5
+
+    def add(self, arr):
+        self._sum += sum(arr)
+        self._count += len(arr)
+
+    def val(self):
+        return self._sum / self._count
+
 def sigmoid(x):
 	return 1.0 / (1.0 + np.exp(-x))
 
@@ -67,6 +79,8 @@ def policy_continue(env, agent, steps, horizon=None):
     for i in range(steps):
         obs.append(observation)
         action = agent.act(observation)
+        if action == 2:
+            import ipdb; ipdb.set_trace()  # breakpoint 53d1bdca //
 
         observation, reward, done, _ = env.step(action)
 

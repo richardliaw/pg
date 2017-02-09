@@ -24,7 +24,7 @@ def agent_init():
             'input_size': env.observation_space.shape[0],
             'hidden_size': 64,
             'num_actions': env.action_space.n,
-            'learning_rate': 0.01
+            'learning_rate': 0.1
     }
     return PolicyGradientAgent(hparams)
 
@@ -37,7 +37,7 @@ def critic_init():
     hparams = {
             'input_size': env.observation_space.shape[0],
             'hidden_size': 64,
-            'learning_rate': 0.1
+            'learning_rate': 0.01
     }
     return Critic(hparams)
 
@@ -87,6 +87,8 @@ def train(u_itr=2000):
         remaining.extend([rollout_gradient.remote(param_id) for i in range(jobs)])
         result, remaining = ray.wait(remaining)
         pgrad, cgrad, rwd, closs = ray.get(result)[0]
+        import ipdb; ipdb.set_trace()  # breakpoint f3fdad1e //
+        
 
         critic_loss.append(closs)
         rwds.append(rwd)

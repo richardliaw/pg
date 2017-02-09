@@ -26,24 +26,28 @@ class Critic(TFModel):
                     inputs=self._input,
                     num_outputs=hparams['hidden_size'],
                     activation_fn=tf.nn.relu,
-                    weights_initializer=tf.contrib.layers.xavier_initializer())
-            # hidden2 = tf.contrib.layers.fully_connected(
-            #         inputs=hidden1,
-            #         num_outputs=hparams['hidden_size'],
-            #         activation_fn=tf.nn.relu,
-            #         weights_initializer=tf.contrib.layers.xavier_initializer())
-            self._value = tf.contrib.layers.fully_connected(
+                    weights_initializer=tf.contrib.layers.xavier_initializer(),
+                    biases_initializer=tf.contrib.layers.xavier_initializer())
+            hidden2 = tf.contrib.layers.fully_connected(
                     inputs=hidden1,
+                    num_outputs=hparams['hidden_size'],
+                    activation_fn=tf.nn.relu,
+                    weights_initializer=tf.contrib.layers.xavier_initializer())
+            self._value = tf.contrib.layers.fully_connected(
+                    inputs=hidden2,
                     num_outputs=1,
                     activation_fn=None,
                     weights_initializer=tf.contrib.layers.xavier_initializer())
 
             # self._discounted_rwds = tf.placeholder(tf.float32, shape=[None, 1])
             self._discounted_rwds = tf.placeholder(tf.float32)
-            squared_loss = tf.square(tf.reshape(self._value, [-1]) - self._discounted_rwds)
-            # squared_loss = tf.Print(squared_loss, [tf.shape(squared_loss)])
+            v = tf.reshape(self._value, [-1]) - self._discounted_rwds
+            squared_loss = tf.square(v)
+            squared_loss = tf.Print(squared_loss, [tf.reduce_sum(squared_loss), self._value, self._discounted_rwds], summarize=20, message="DEBUG: Critic Loss + Value - ")
 
-            loss = tf.reduce_mean(squared_loss)
+            
+
+            loss = tf.reduce_sum(squared_loss)
             # tf.summary.scalar("Critic Loss", loss)
             self.loss = loss
             # update
