@@ -1,9 +1,9 @@
 # pg
 Playing with policy gradients
 
+Includes A3C Implementation (without shared RMS vector)
+
 TODO list:
- - VPG Tensorflow implementation
- - VPG without cross-entropy loss function
  - Natural Policy Gradient
- - Trust Region Policy Gradient
- - hogwild
+ - Trust Region Policy Optimization
+ - hogwild (shared memory numpy arrays?)
