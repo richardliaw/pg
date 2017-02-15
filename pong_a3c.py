@@ -52,7 +52,6 @@ def a3c_rollout_grad(params, avg_rwd):
 
     policy_start = time.time()
     obs, acts, rews, done = policy_continue(env, actor_critic, steps)
-
     grad_start = time.time()
     if sum(rews):
         print rews, done
@@ -107,12 +106,13 @@ def train(u_itr=5000):
                 "starttask": 0,
                 "updatetime": 0,
                 "launch": 0,
-                "get": 0
+                "get": 0,
+                "st_log": []
                 }
 
     while cur_itr < u_itr:
         start_task = time.time()
-        params['weights'] = actor_critic.get_weights()
+        params['weights'] = actor_critic.get_weights()        
         # if any([(np.isnan(i)).any() for i in params['weights'].values()]):
         #     import ipdb; ipdb.set_trace()  # breakpoint 71025765 //
         
@@ -123,7 +123,6 @@ def train(u_itr=5000):
         run_task = time.time()
         result, remaining = ray.wait(remaining)
         get_task = time.time()
-
         grads, info = ray.get(result)[0]
         average_reward.add(info["rews"])
         rwds.extend(info["real_rwds"])
@@ -138,10 +137,13 @@ def train(u_itr=5000):
         timing["gradtime"] += info["gradtime"]
         timing["setuptime"] += info["setuptime"]
         timing["starttask"] += run_task - start_task
+        timing["st_log"].append(int((run_task - start_task) * 1000))
         timing["updatetime"] += update_task - get_task
         timing["launch"] += info["start"] - run_task
         timing["get"] += get_task - info["end"]
         tasks_launched += 1
+        import ipdb; ipdb.set_trace()  # breakpoint 90dbe526 //
+        
 
         if cur_itr and cur_itr % 50 == 0:
             testbed = AtariEnvironment(gym.make(GYM_ENV))
@@ -166,6 +168,7 @@ def train(u_itr=5000):
             print "Update Time: {}".format(timing['updatetime'])
             print "Task Launch Time: {}".format(timing['launch'])
             print "Task Get Time: {}".format(timing['get'])
+            print "Log - ", timing["st_log"]
 
             cur_time = time.time()
             tasks_launched = 0
@@ -175,7 +178,8 @@ def train(u_itr=5000):
                         "starttask": 0,
                         "updatetime": 0,
                         "launch": 0,
-                        "get": 0
+                        "get": 0,
+                        "st_log": []
                         }
 
             rwds = []

@@ -11,7 +11,7 @@ class AtariEnvironment(object):
     of size buffer_size from which environment state
     is constructed.
     """
-    def __init__(self, gym_env, resized_width=84, resized_height=84, buffer_size=4):
+    def __init__(self, gym_env, resized_width=80, resized_height=80, buffer_size=4):
         self.env = gym_env
         self.resized_width = resized_width
         self.resized_height = resized_height
@@ -58,7 +58,9 @@ class AtariEnvironment(object):
         1) Get image grayscale
         2) Rescale image
         """
-        return resize(rgb2gray(observation), (self.resized_width, self.resized_height))
+        # return resize(rgb2gray(observation), (self.resized_width, self.resized_height))
+        return (observation[25:-25:2,::2,0] - 128.0) / 128.8
+
 
     def step(self, action_index):
         """

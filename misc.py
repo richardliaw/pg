@@ -1,5 +1,22 @@
 import numpy as np
 import tensorflow as tf
+import cProfile, pstats, StringIO
+
+
+def do_cprofile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            # s = StringIO.StringIO()
+            sortby = 'cumulative'
+            ps = pstats.Stats(profile).sort_stats(sortby)
+            ps.print_stats(.2)
+    return profiled_func
 
 class RunningAvg():
     def __init__(self):
@@ -61,7 +78,7 @@ def policy_rollout(env, agent, horizon=None, show=False):
         eps_length += 1
     return obs, acts, rews
 
-
+@do_cprofile
 def policy_continue(env, agent, steps, horizon=None,  show=False):
     """Run few steps - assumes env object is stateful"""
     if horizon is None:
