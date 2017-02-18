@@ -74,8 +74,8 @@ class ActorCritic(TFModel):
         log_prob = tf.log(tf.nn.softmax(self.logits)) #this is negative
         indices = tf.range(0, tf.shape(log_prob)[0]) * tf.shape(log_prob)[1] + self._acts
         act_prob = tf.gather(tf.reshape(log_prob, [-1]), indices)#this is negative
-        entropy = -tf.reduce_mean(tf.mul(tf.nn.softmax(self.logits), log_prob))
-        policy_loss = -(tf.reduce_mean(tf.mul(act_prob, self._advantages)) 
+        entropy = -tf.reduce_mean(tf.multiply(tf.nn.softmax(self.logits), log_prob))
+        policy_loss = -(tf.reduce_mean(tf.multiply(act_prob, self._advantages)) 
                                         + hparams['entropy_wt'] * entropy)
 
 

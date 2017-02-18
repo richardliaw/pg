@@ -9,11 +9,12 @@ from actorcritic import ActorCritic
 from atari_environment import AtariEnvironment
 from conv_a3c import ConvAC
 
-NUM_WORKERS = 1
+log_file = "tmp/log.txt"
+NUM_WORKERS = 18
 GAMMA = 0.99
 GYM_ENV = 'Pong-v0'
 
-ray.init(num_workers=NUM_WORKERS)
+ray.init(num_workers=NUM_WORKERS, redirect_output=True)
 
 def env_init():
     return AtariEnvironment(gym.make(GYM_ENV))
@@ -40,7 +41,7 @@ def ac_reinit(actor_critic):
 ray.env.actor_critic = ray.EnvironmentVariable(ac_init, ac_reinit)
 
 @ray.remote
-def a3c_rollout_grad(params, avg_rwd):
+def a3c_rollout_grad(params, avg_rwd, more=True):
     prelim_start = time.time()
     GAMMA = params['gamma']
     env = ray.env.env
@@ -53,8 +54,6 @@ def a3c_rollout_grad(params, avg_rwd):
     policy_start = time.time()
     obs, acts, rews, done = policy_continue(env, actor_critic, steps)
     grad_start = time.time()
-    if sum(rews):
-        print rews, done
     estimated_values = actor_critic.get_value(obs).flatten()
     assert len(estimated_values.shape) == 1
     cur_rwd = 0 if done else estimated_values[-1]
@@ -80,7 +79,6 @@ def a3c_rollout_grad(params, avg_rwd):
             "end": grad_end}
     # if any([(np.isnan(i)).any() for i in grads]):
     #     import ipdb; ipdb.set_trace()  # breakpoint 3e26a68a //
-
 
     return grads, info
 
@@ -142,33 +140,31 @@ def train(u_itr=5000):
         timing["launch"] += info["start"] - run_task
         timing["get"] += get_task - info["end"]
         tasks_launched += 1
-        import ipdb; ipdb.set_trace()  # breakpoint 90dbe526 //
         
-
-        if cur_itr and cur_itr % 50 == 0:
+        if cur_itr and cur_itr % 40 == 0:
             testbed = AtariEnvironment(gym.make(GYM_ENV))
-            print "%d: Avg Reward - %f" % (cur_itr, evaluate_policy(testbed, actor_critic, itr=10))
+            log_str = "%d: Avg Reward - %f" % (cur_itr, evaluate_policy(testbed, actor_critic, itr=10))
+            with open(log_file, "a") as f:
+		f.write(log_str + "\n")
+
             c_val = np.asarray(discounted_cumsum(rwds, GAMMA))
             c_est = actor_critic.get_value(obs).flatten()
             print "%d: Critic Loss - total: %f \t avg: %f \t most: %f" % (cur_itr, 
                 sq_loss(c_val, c_est), 
                 sq_loss(c_val, c_est) / len(c_val), 
                 sq_loss(c_val[:-10], c_est[:-10]) / (len(c_val) - 10 + 1e-2))
-            print np.vstack([c_val, c_est]).T
-            import ipdb; ipdb.set_trace()  # breakpoint a1d8f422 //
             # TODO: Get average Value Fn fit
             cur_itr += 1
         if info["done"]:
-            print "That took {} seconds..".format(time.time() - cur_time)
-            print "Launched {} tasks...".format(tasks_launched)
-            print "Start Time: {}".format(timing['starttask'])
-            print "In-Worker Setup Time: {}".format(timing['setuptime'])
-            print "Policy Time: {}".format(timing['policytime'])
-            print "Gradient Time: {}".format(timing['gradtime'])
-            print "Update Time: {}".format(timing['updatetime'])
-            print "Task Launch Time: {}".format(timing['launch'])
-            print "Task Get Time: {}".format(timing['get'])
-            print "Log - ", timing["st_log"]
+            # print "That took {} seconds..".format(time.time() - cur_time)
+            # print "Launched {} tasks...".format(tasks_launched)
+            # print "Start Time: {}".format(timing['starttask'])
+            # print "In-Worker Setup Time: {}".format(timing['setuptime'])
+            # print "Policy Time: {}".format(timing['policytime'])
+            # print "Gradient Time: {}".format(timing['gradtime'])
+            # print "Update Time: {}".format(timing['updatetime'])
+            # print "Task Launch Time: {}".format(timing['launch'])
+            # print "Task Get Time: {}".format(timing['get'])
 
             cur_time = time.time()
             tasks_launched = 0

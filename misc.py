@@ -78,7 +78,6 @@ def policy_rollout(env, agent, horizon=None, show=False):
         eps_length += 1
     return obs, acts, rews
 
-@do_cprofile
 def policy_continue(env, agent, steps, horizon=None,  show=False):
     """Run few steps - assumes env object is stateful"""
     if horizon is None:
