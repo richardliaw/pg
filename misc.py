@@ -1,7 +1,11 @@
 import numpy as np
 import tensorflow as tf
 import cProfile, pstats, StringIO
+import datetime
 
+def timestamp():
+    now = datetime.datetime.now(dateutil.tz.tzlocal())
+    return now.strftime('%Y-%m-%d_%H-%M-%S')
 
 def do_cprofile(func):
     def profiled_func(*args, **kwargs):

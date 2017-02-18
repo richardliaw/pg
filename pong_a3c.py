@@ -9,7 +9,7 @@ from actorcritic import ActorCritic
 from atari_environment import AtariEnvironment
 from conv_a3c import ConvAC
 
-log_file = "tmp/log.txt"
+log_file = "tmp/log_%s.txt" % timestamp()
 NUM_WORKERS = 18
 GAMMA = 0.99
 GYM_ENV = 'Pong-v0'
@@ -46,7 +46,7 @@ def a3c_rollout_grad(params, avg_rwd, more=True):
     GAMMA = params['gamma']
     env = ray.env.env
     actor_critic = ray.env.actor_critic
-    steps = 10
+    steps = 20
 
     actor_critic.set_weights(params['weights'])
 
