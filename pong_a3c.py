@@ -91,9 +91,10 @@ def train(u_itr=5000):
     rwds = []
     obs = []
     cur_itr = 0
-    tasks_launched = 0
+    steps_taken = 0
     params = {"gamma": GAMMA}
     average_reward = RunningAvg()    
+    tasks_launched = 0
 
     ## debug
     sq_loss = lambda x, y: sum((x - y)**2)
@@ -125,6 +126,7 @@ def train(u_itr=5000):
         average_reward.add(info["rews"])
         rwds.extend(info["real_rwds"])
         obs.extend(info["obs"])
+        steps_taken += len(info["obs"])
 
         actor_critic.model_update(grads)
         update_task = time.time()
@@ -143,7 +145,7 @@ def train(u_itr=5000):
         
         if cur_itr and cur_itr % 40 == 0:
             testbed = AtariEnvironment(gym.make(GYM_ENV))
-            log_str = "%d: Avg Reward - %f" % (cur_itr, evaluate_policy(testbed, actor_critic, itr=10))
+            log_str = "[%s] %d: Avg Reward - %f\tSteps: %d" % (timestamp(), cur_itr, evaluate_policy(testbed, actor_critic, itr=10), steps_taken)
             with open(log_file, "a") as f:
 		f.write(log_str + "\n")
 
@@ -153,7 +155,6 @@ def train(u_itr=5000):
                 sq_loss(c_val, c_est), 
                 sq_loss(c_val, c_est) / len(c_val), 
                 sq_loss(c_val[:-10], c_est[:-10]) / (len(c_val) - 10 + 1e-2))
-            # TODO: Get average Value Fn fit
             cur_itr += 1
         if info["done"]:
             # print "That took {} seconds..".format(time.time() - cur_time)

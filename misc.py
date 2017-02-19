@@ -1,10 +1,10 @@
 import numpy as np
 import tensorflow as tf
 import cProfile, pstats, StringIO
-import datetime
+import datetime, dateutil
 
 def timestamp():
-    now = datetime.datetime.now(dateutil.tz.tzlocal())
+    now = datetime.datetime.now()
     return now.strftime('%Y-%m-%d_%H-%M-%S')
 
 def do_cprofile(func):
