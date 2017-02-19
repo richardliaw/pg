@@ -115,7 +115,7 @@ def train(u_itr=5000):
         # if any([(np.isnan(i)).any() for i in params['weights'].values()]):
         #     import ipdb; ipdb.set_trace()  # breakpoint 71025765 //
         
-        param_id = ray.put(params)
+        # param_id = ray.put(params)
 
         jobs = NUM_WORKERS - len(remaining)
         remaining.extend([a3c_rollout_grad.remote(params, average_reward.val()) for i in range(jobs)])
