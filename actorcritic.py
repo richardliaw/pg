@@ -82,7 +82,7 @@ class ActorCritic(TFModel):
         # Value Function Loss
         self._discounted_rwds = tf.placeholder(tf.float32)
         v = tf.reshape(self._value, [-1]) - self._discounted_rwds
-        self.valuefn_loss = tf.reduce_sum(tf.square(v))
+        self.valuefn_loss = tf.reduce_mean(tf.square(v))
 
         # update
         self.loss = policy_loss + 0.5 * self.valuefn_loss # according to Mnih
