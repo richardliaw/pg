@@ -85,7 +85,7 @@ class ActorCritic(TFModel):
         self.valuefn_loss = tf.reduce_mean(tf.square(v))
 
         # update
-        self.loss = policy_loss + 0.5 * self.valuefn_loss # according to Mnih
+        self.loss = policy_loss + 10. * self.valuefn_loss # arbitrary scaling ..
 
     def start(self):
         self._s = tf.Session(graph=self.g)

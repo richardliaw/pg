@@ -50,7 +50,6 @@ def a3c_rollout_grad(params, avg_rwd, more=True):
 
     actor_critic.set_weights(params['weights'])
 
-
     policy_start = time.time()
     obs, acts, rews, done = policy_continue(env, actor_critic, steps)
     grad_start = time.time()
@@ -181,6 +180,12 @@ def train(u_itr=5000):
 
             rwds = []
             obs = []
+    return steps_taken
 
 if __name__ == '__main__':
-    train()
+    from datetime import datetime
+    start = datetime.now()
+    steps = train()
+    with open(log_file, "a") as f:
+        total_time = (datetime.now() - start).total_seconds()
+        f.write("This took %f seconds - throughput: %f" % (total_time, steps * 1. / total_time))
