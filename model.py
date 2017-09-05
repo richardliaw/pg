@@ -1,5 +1,5 @@
 import numpy as np
-from misc import sigmoid, discounted_cumsum
+from misc import sigmoid, discounted_cumsum, normalize
 
 class KarpathyNN():
     """Personal re-implementation guided by Andrej Karpathy"""
@@ -9,7 +9,7 @@ class KarpathyNN():
         self.weights = {'W1': W1, 'W2':W2}
         self.dweights = {'W1': np.zeros_like(W1), 'W2':np.zeros_like(W2)}
         self.discount = 0.995
-        self.alpha = 1e-5 # change to rms prop?
+        self.alpha = 1e-2 # change to rms prop?
         self.reset_hidden()
 
     def reset_hidden(self):
@@ -40,6 +40,7 @@ class KarpathyNN():
 
     def policy_grad(self, trajrwd):
         discounted = discounted_cumsum(trajrwd, self.discount)
+        # discounted = normalize(discounted)
         for i in range(len(trajrwd)):
             grad = self.backprop(discounted[i], self.eph['h1'][i], self.eph['h2'][i], self.eph['dlogp'][i])
             for model in grad:
@@ -48,7 +49,7 @@ class KarpathyNN():
     
     def model_update(self):
         for model in self.weights:
-            print "%s: " % model, self.weights[model][:4]
+            # print("%s: " % model, self.weights[model][:4])
             self.weights[model] += self.alpha * self.dweights[model] # .. didn't average but it's ok
             self.dweights[model] = np.zeros_like(self.dweights[model])
 

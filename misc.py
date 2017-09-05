@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import cProfile, pstats, StringIO
+# import cProfile, pstats, StringIO
 import datetime, dateutil
 
 def timestamp():
@@ -95,7 +95,7 @@ def policy_continue(env, agent, steps, horizon=None,  show=False):
     if hasattr(env, "state"):
         observation = env.state
     else:
-        print "Resetting..."
+        print("Resetting...")
         observation = env.reset()
 
 
