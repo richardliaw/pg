@@ -9,7 +9,7 @@ class KarpathyNN():
         self.weights = {'W1': W1, 'W2':W2}
         self.dweights = {'W1': np.zeros_like(W1), 'W2':np.zeros_like(W2)}
         self.discount = 0.995
-        self.alpha = 1e-2 # change to rms prop?
+        self.alpha = 1e-4 # change to rms prop?
         self.reset_hidden()
 
     def reset_hidden(self):

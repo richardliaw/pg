@@ -10,13 +10,13 @@ show = False
 logging.getLogger().setLevel(logging.WARNING)
 logging.warn("We are starting...")
 import pong_py
-env = gym.make("PongJS-v0")
+env = gym.make("CartPole-v0")
 # env = gym.make("AirRaid-ram-v0")
 #import ipdb; ipdb.set_trace()
 
 policy = Policy(env, model_cls=KarpathyNN)
 N = 1000
-horizon = np.inf # env.spec.max_episode_steps
+horizon = env.spec.max_episode_steps
 num_trajs = 10
 
 for i in range(N):
@@ -33,7 +33,7 @@ for i in range(N):
         while (obs_count < horizon) and not terminal:
             if show: env.render()
             a = policy.get_action(s)
-            s, r, terminal, _  = env.step(1 if a == 1 else 2)
+            s, r, terminal, _  = env.step(a)#1 if a == 1 else 2)
             ereward.append(r)
             obs_count += 1
         tlengths.append(obs_count)
